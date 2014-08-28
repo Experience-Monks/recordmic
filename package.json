@@ -1,0 +1,30 @@
+{
+  "name": "recordmic",
+  "version": "0.0.0",
+  "description": "Record mic input from getUserMedia and web audio",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Jam3/recordmic.git"
+  },
+  "keywords": [
+    "microphone",
+    "mic",
+    "record",
+    "getUserMedia",
+    "audio",
+    "webaudio"
+  ],
+  "author": "Mikko Haapoja <me@mikkoh.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Jam3/recordmic/issues"
+  },
+  "homepage": "https://github.com/Jam3/recordmic"
+}
