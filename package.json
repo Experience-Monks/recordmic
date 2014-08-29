@@ -1,6 +1,6 @@
 {
   "name": "recordmic",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Record mic input from getUserMedia and web audio",
   "main": "index.js",
   "directories": {
