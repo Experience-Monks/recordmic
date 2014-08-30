@@ -219,14 +219,14 @@ recordmic.prototype = {
 	start: function() {
 
 		this.clear();
-		this.isRecording = true;
+		window.recordmic_onaudioprocess = this.recorder.onaudioprocess = this.onAudioData.bind( this );
 
 		return this;
 	},
 
 	stop: function() {
 
-		this.isRecording = false;
+		this.recorder.onaudioprocess = undefined;
 
 		return this;
 	},
@@ -255,14 +255,12 @@ recordmic.prototype = {
 
 		// initialize everything
 		this.context =  new AudioContext();
-		window.audioInput = this.context.createMediaStreamSource( ev );
-
+		this.audioInput = this.context.createMediaStreamSource( ev );
+		
 		this.gain = this.context.createGain();
 		this.recorder = this.context.createScriptProcessor( this.s.bufferSize, 2, 2);
 
-		window.recordmic_onaudioprocess = this.recorder.onaudioprocess = this.onAudioData.bind( this );
-
-		audioInput.connect( this.gain );
+		this.audioInput.connect( this.gain );
 		this.gain.connect( this.recorder );
 		this.recorder.connect( this.context.destination );
 
@@ -275,39 +273,36 @@ recordmic.prototype = {
 
 	onAudioData: function( ev ) {
 
-		if( this.isRecording ) {
+		var left, right, leftData, rightData;
 
-			var left, right, leftData, rightData;
-
-			left = ev.inputBuffer.getChannelData( 0 );
-			right = ev.inputBuffer.getChannelData( 1 );
+		left = ev.inputBuffer.getChannelData( 0 );
+		right = ev.inputBuffer.getChannelData( 1 );
 
 
-			// do the call back and send the current data
-			// this allows users for instance to modify data
-			// on the fly also
-			if( this.s.onSampleData ) {
+		// do the call back and send the current data
+		// this allows users for instance to modify data
+		// on the fly also
+		if( this.s.onSampleData ) {
 
-				this.s.onSampleData( left, right );
-			}
-
-			// now do recording
-			if( this.leftData ) {
-
-				leftData = new Float32Array( left );	
-
-				this.leftData.push( leftData );
-			}
-
-			if( this.rightData ) {
-
-				rightData = new Float32Array( right );
-				
-				this.rightData.push( rightData );	
-			}
-			
-			this.recordingLength += this.s.bufferSize;
+			this.s.onSampleData( left, right );
 		}
+
+		// now do recording
+		if( this.leftData ) {
+
+			leftData = new Float32Array( left );	
+
+			this.leftData.push( leftData );
+		}
+
+		if( this.rightData ) {
+
+			rightData = new Float32Array( right );
+			
+			this.rightData.push( rightData );	
+		}
+		
+		this.recordingLength += this.s.bufferSize;
 	}
 };
 
