@@ -260,12 +260,13 @@ recordmic.prototype = {
 		this.gain = this.context.createGain();
 		this.recorder = this.context.createScriptProcessor( this.s.bufferSize, 2, 2);
 
+		// now do everything outside of init
+		this.setRecordVolume( this.s.volume );
+
 		this.audioInput.connect( this.gain );
 		this.gain.connect( this.recorder );
 		this.recorder.connect( this.context.destination );
 
-		// now do everything outside of init
-		this.setRecordVolume( this.s.volume );
 		this.setMono( this.s.mono );
 
 		callBack( undefined, this );
