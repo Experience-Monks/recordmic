@@ -11,7 +11,7 @@ var recordmic = function( settings, callBack ) {
 
 	// setup settings
 	var s = settings || {};
-	s.volume = s.volume || 0;
+	s.volume = s.volume || 1;
 	s.bufferSize = s.bufferSize || 2048;
 	s.mono = s.mono || false;
 
