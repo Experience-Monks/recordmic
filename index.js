@@ -252,7 +252,7 @@ recordmic.prototype = {
 	/*************** EVENTS ******************/
 	/*****************************************/
 	onGetUserMedia: function( callBack, ev ) {
-
+		this.stream = ev;
 		// initialize everything
 		this.context =  new AudioContext();
 		this.audioInput = this.context.createMediaStreamSource( ev );
