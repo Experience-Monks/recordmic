@@ -1,8 +1,30 @@
+/** @module recordmic */
+
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
 
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 
-
+/** 
+ * recordmic can be used to record from the mic in browser via 
+ * getUserMedia. You can pass in some settings when instantiating the recordmic.
+ *
+ * The settings object can contain the following properties:
+ * ```javascript
+ * {
+ * 	volume: 1, // this is the volume at which the mic will record by default this value is 1
+ * 	bufferSize: 2048, // this is the size of the buffer as its recording. Default is 2048
+ * 	mono: false // whether the mic will record in mono by default this value is false (it will record in stereo) 
+ * 				// mono can also be 'left' or 'right' to define which channel is being used.
+ * 	onSampleData: null // this is a callback if you want to access sampledata as it's being recorded. You can for instance
+ * 					   // modify data as it's being recorded.
+ * }
+ * ```
+ * 
+ * @class
+ * @param  {Object} settings this is is the settings object. See above for possible values which can be passed in.
+ * @param  {Function} callBack this callback will be called once the mic has "initialized" itself and is ready to record
+ * @return {recordmic} You can call this as a function or instantiate via new keyword. It will return an instance of recordmic
+ */
 var recordmic = function( settings, callBack ) {
 
 	// handle instancing
@@ -31,7 +53,12 @@ var recordmic = function( settings, callBack ) {
 	}
 };
 
-//this can be used to simply check if you can record audio
+/**
+ * recordmic.isAvailable will be true when recordmic is able to record. In order for recordmic to be able
+ * to record the browser must have getUserMedia and AudioContext.
+ *
+ * @var {Boolean} isAvailable
+ */
 recordmic.isAvailable = Boolean( navigator.getUserMedia ) && Boolean( AudioContext );
 
 recordmic.prototype = {
@@ -39,6 +66,13 @@ recordmic.prototype = {
 	/*****************************************/
 	/*********** GET SET FUNCTIONS ***********/
 	/*****************************************/
+
+	/**
+	 * Call this function to set the volume at which the microphoe will record. Usually this value will be
+	 * between 0 and 1.
+	 * 
+	 * @param {Number} volume A value between 0 and 1
+	 */
 	setRecordVolume: function( volume ) {
 
 		this.s.volume = volume;
@@ -48,11 +82,25 @@ recordmic.prototype = {
 		return this;
 	},
 
+	/**
+	 * Volume at which we're recording between 0 and 1
+	 * 
+	 * @return {Number} A volume value between 0 and 1
+	 */
 	getRecordVolume: function() {
 
 		return this.s.volume;
 	},
 
+	/**
+	 * Will set wether recordmic is recording in mono or not. If you pass in false we'll be recording in
+	 * stereo. If you pass pass in true then the right channel will be used. You can also pass in the strings
+	 * ```'left'``` and ```'right'``` to define which channel is used to record when recording in mono.
+	 * 
+	 * @param {String|Boolean} mono false will mean it's recording in stereo. true means that the right channel's data
+	 *                              will be used. ```'left'``` means the left channel will be used and ```'right'```
+	 *                              will mean that the right channel is used.
+	 */
 	setMono: function( mono ) {
 
 		this.s.mono = mono;
@@ -74,11 +122,29 @@ recordmic.prototype = {
 		return this;
 	},
 
+	/**
+	 * This will return wether we're recording in mono. This value can be either a boolean
+	 * or a string. If ```true``` is returned it means we're recording in mono and the right channel
+	 * is used. If ```false``` is returned then we're recording in stereo. If a string is returned and it's
+	 * value is ```'left'``` then we're recording in mono using the left channel and ```'right'`` for the 
+	 * right channel.
+	 * 
+	 * @return {String|Boolean} value for mono either: ```true```, ```false```, ```'right'```, ```'left'```
+	 */
 	getMono: function() {
 
 		return this.s.mono;
 	},
 
+	/**
+	 * getChannelData will return return both left and right channel data from our recording.
+	 * If we're recording in mono one of the channels will be null.
+	 *
+	 * The data returned for each channel are ```Float32Array``` arrays.
+	 * 
+	 * @return {Object} This object will have two variables ```left``` and ```right``` which 
+	 *                  contain the data for each channel.
+	 */
 	getChannelData: function() {
 
 		var lCombined, rCombined;
@@ -107,6 +173,14 @@ recordmic.prototype = {
 		};
 	},
 
+	/**
+	 * This will return mono data for our recording. What is returned is a ```Float32Array```.
+	 * The mono setting will determine which array will be returned. If mono is set to true
+	 * then the left channel will be returned over the right.
+	 * 
+	 * @param  {String} [mono] This is optional. either 'left' or 'right' to determine which channel will be returned.
+	 * @return {Float32Array} The sound data for our recording as mono
+	 */
 	getMonoData: function( mono ) {
 
 		var combined = null, writePos = 0, data;
@@ -152,6 +226,21 @@ recordmic.prototype = {
 		return combined;
 	},
 
+	/**
+	 * getStereoData will return both the left and right channel interleaved as a ```Float32Array```.
+	 *
+	 * You can also pass in a value for mono. If you do then one of the channells will be interleaved as
+	 * stereo data.
+	 *
+	 * So for instance in stereo:
+	 * ```[ left_data1, right_data1, left_data2, right_data2, left_data3, right_data3 ]```
+	 *
+	 * And if mono is set to ```'left'```:
+	 * ```[ left_data1, left_data1, left_data2, left_data2, left_data3, left_data3 ]```
+	 * 
+	 * @param  {String} mono If you'd like to get mono data interleaved as stereo data either pass 'left' or 'right'
+	 * @return {Float32Array} Sound data interleaved as a Float32Array.
+	 */
 	getStereoData: function( mono ) {
 
 		var combined = null, writePos = 0, data;
@@ -216,6 +305,12 @@ recordmic.prototype = {
 	/*****************************************/
 	/**************** METHODS ****************/
 	/*****************************************/
+
+	/**
+	 * When you call start you begin recording.
+	 *
+	 * @chainable
+	 */
 	start: function() {
 
 		this.clear();
@@ -224,6 +319,11 @@ recordmic.prototype = {
 		return this;
 	},
 
+	/**
+	 * Call stop to stop recording.
+	 *
+	 * @chainable
+	 */
 	stop: function() {
 
 		this.recorder.onaudioprocess = undefined;
@@ -231,6 +331,11 @@ recordmic.prototype = {
 		return this;
 	},
 
+	/**
+	 * This will clear any recorded data. This should be called if you're wanting to record multiple clips.
+	 *
+	 * @chainable
+	 */
 	clear: function() {
 
 		this.recordingLength = 0;
@@ -239,6 +344,10 @@ recordmic.prototype = {
 		return this;
 	},
 
+	/**
+	 * 
+	 * Calling destroy will stop recording and clear all recorded data.
+	 */
 	destroy: function() {
 
 		this.stop();
