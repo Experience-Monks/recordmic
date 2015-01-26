@@ -242,6 +242,8 @@ recordmic.prototype = {
 	destroy: function() {
 
 		this.stop();
+		this.stream.stop();
+		this.stream = null; 
 
 		this.recordingLength = 0;
 		this.leftData = null;
